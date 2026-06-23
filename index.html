@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web-Based GLua HUD Live Previewer</title>
+    <title>gluaview</title>
     <style>
         body {
             margin: 0;
@@ -65,11 +65,10 @@
             justify-content: center;
             position: relative;
         }
-        /* Simulates a 1920x1080 GMod screen scaled down */
         #gmod-screen {
             width: 90%;
             aspect-ratio: 16 / 9;
-            background-image: url('https://raw.githubusercontent.com/glua/load-seed/master/app/images/background.jpg'); /* Standard GMod background placeholder */
+            background-image: url('https://raw.githubusercontent.com/glua/load-seed/master/app/images/background.jpg');
             background-size: cover;
             background-position: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -97,22 +96,18 @@
             <span>GLua Code Editor</span>
             <button class="btn-run" onclick="updatePreview()">Update Preview</button>
         </div>
-        <textarea id="code-input" spellcheck="false">-- Write your GLua HUD code here!
--- (Uses standard canvas fallback interpreter)
-
-surface.SetDrawColor(0, 0, 0, 150)
+        <textarea id="code-input" spellcheck="false">surface.SetDrawColor(0, 0, 0, 150)
 surface.DrawRect(50, 50, 300, 120)
 
 surface.SetDrawColor(0, 150, 255, 255)
 surface.DrawOutlinedRect(50, 50, 300, 120)
 
 draw.SimpleText("GMod Web HUD", "DermaLarge", 70, 70, Color(255, 255, 255, 255))
-draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))
-        </textarea>
+draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))</textarea>
     </div>
 
     <div id="preview-container">
-        <div class="header" style="position:absolute; top:0; width:100%; box-sizing:border-box;">GMod Screen Preview (1920x1080 Game Mock)</div>
+        <div class="header" style="position:absolute; top:0; width:100%; box-sizing:border-box;">gluaview - Game Mock</div>
         <canvas id="gmod-screen" width="1920" height="1080"></canvas>
         <div id="error-log"></div>
     </div>
@@ -122,12 +117,10 @@ draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))
         const ctx = canvas.getContext("2d");
         const errorLog = document.getElementById("error-log");
 
-        // Helper helper function to mimic GMod's Color() object
         function Color(r, g, b, a = 255) {
             return `rgba(${r}, ${g}, ${b}, ${a / 255})`;
         }
 
-        // --- Mocking GMod Libraries in JS JS ---
         const surface = {
             currentColor: "rgba(255,255,255,1)",
             SetDrawColor: function(r, g, b, a = 255) {
@@ -148,7 +141,6 @@ draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))
             SimpleText: function(text, font, x, y, colorStr, xAlign, yAlign) {
                 ctx.fillStyle = colorStr || "white";
                 
-                // Approximate GMod default fonts
                 if (font === "DermaLarge") ctx.font = "bold 32px sans-serif";
                 else if (font === "DermaDefault") ctx.font = "18px sans-serif";
                 else ctx.font = "24px sans-serif";
@@ -159,24 +151,19 @@ draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))
             }
         };
 
-        // --- Core Interpreter Parser ---
         function updatePreview() {
             errorLog.style.display = "none";
-            // Clear the virtual screen canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let rawLua = document.getElementById("code-input").value;
 
             try {
-                // Strip out GLua hooks or loops wrappers so it runs inline sequentially in JS
-                // e.g., hook.Add("HUDPaint", "...", function() ... end)
                 let cleanJs = rawLua
                     .replace(/hook\.Add\s*\([^,]+,[^,]+,\s*function\s*\(\s*\)/g, "")
                     .replace(/end\s*\)\s*$/g, "") 
-                    .replace(/local\s+/g, "let ") // convert 'local' to 'let'
-                    .replace(/--.*/g, "");        // remove comments
+                    .replace(/local\s+/g, "let ")
+                    .replace(/--.*/g, "");
 
-                // Evaluates the code against our mapped surface/draw JS objects
                 const execute = new Function('surface', 'draw', 'Color', cleanJs);
                 execute(surface, draw, Color);
 
@@ -186,7 +173,6 @@ draw.SimpleText("Health: 100", "DermaDefault", 70, 120, Color(255, 50, 50, 255))
             }
         }
 
-        // Initial paint on load
         window.onload = updatePreview;
     </script>
 </body>
